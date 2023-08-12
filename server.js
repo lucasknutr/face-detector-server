@@ -6,5 +6,8 @@ const app = express();
 
 console.log(database);
 
+// / --> get
 // /signin --> push
 // /register --> push
+
+// test
