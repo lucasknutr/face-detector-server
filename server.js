@@ -1,4 +1,3 @@
-import fs from 'fs';
 import express from 'express';
 import database from '../../my-server/server-express.js'
 
@@ -13,7 +12,7 @@ app.post('/signin', (req, res) => {
     let response = false;
     database.forEach(user => {
         if(req.body.email === user.email && req.body.password === user.password){
-            res.json('success!');
+            res.json(user);
             response = true;
         }
     });
