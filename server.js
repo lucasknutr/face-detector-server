@@ -3,7 +3,9 @@ import database from '../../my-server/server-express.js';
 import cors from 'cors';
 import knex from 'knex';
 
+// ! ATTENTION WANDERERS: this is an experimental server code, it's my first full server project, I'm still fighting with the logic. I'm trying to do best practices here, but I'm no parameter if you're trying to replicate or learn anything. You should definetely look for some node and express courses online if that's the case.
 
+// * This is a simple server structure built with express/node to be the backend of my "facedetector" website. It's currently hosted at https://lucasknutr.github.io/face-detector/
 
 const app = express();
 app.use(express.json());
@@ -36,6 +38,8 @@ app.post('/signin', (req, res) => {
 
 })
 
+// * REGISTER: using some simple postgreSQL syntax to insert users data into our database
+
 app.post('/register', (req, res) => {
     const { email, password, name } = req.body;
 
@@ -51,6 +55,8 @@ app.post('/register', (req, res) => {
         res.json('REGISTERED');
 })
 
+// todo: add profiles to each user, till there this specific requisition is useless
+
 app.get('/profile/:id', (req, res) => {
     const { id } = req.params;
     db.select('*').from('usersdb').where({
@@ -65,6 +71,8 @@ app.get('/profile/:id', (req, res) => {
     })
     .catch(err => res.status(400).json('Error getting user'));
 })
+
+// * UPDATING DETECTION COUNT EVERY TIME A USER INPUTS A NEW IMAGE
 
 app.put('/image', (req, res) => {
     let check =  false;
