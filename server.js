@@ -1,8 +1,25 @@
 import express from 'express';
-import database from '../../my-server/server-express.js'
+import database from '../../my-server/server-express.js';
+import cors from 'cors';
+import pg from 'pg';
+import knex from 'knex';
+
+
+knex({
+    client: 'pg',
+    connection: {
+      host : '127.0.0.1',
+      port : 3306,
+      user : 'postgres',
+      password : 'lugaro26',
+      database : 'face-detector'
+    }
+  });
+  
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 app.get('/', (req, res) => {
     res.json(database);
@@ -23,7 +40,7 @@ app.post('/signin', (req, res) => {
 })
 
 app.post('/register', (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, name } = req.body;
     let exists = false;
     database.forEach(user => {
         if(req.body.email === user.email && req.body.password === user.password){
@@ -34,15 +51,16 @@ app.post('/register', (req, res) => {
     async function existence (){
         if(exists === false){
         database.push({
+            'name': name,
             'email': email,
             'password': password,
             'date': new Date(),
             'id': (Number(database[database.length - 1].id) + 1),
             'detections': 0
         })
-        res.json('REGISTERED')
+        res.json('REGISTERED');
     } else {
-        res.json('Sorry, it seems like this email is already registered or is not valid')
+        res.json('Sorry, it seems like this email is already registered or is not valid');
     }
     }
 
@@ -63,8 +81,18 @@ app.get('/profile/:id', (req, res) => {
     }
 })
 
-app.post('/image', (req, res) => {
-    // todo LOGIC BEHIND IMAGE AND COUNTER INCREASE
+app.put('/image', (req, res) => {
+    let check =  false;
+    const { id } = req.body;
+    database.forEach(user => {
+        if(user.id === id){
+            check = true;
+            user.detections++;
+        }
+    });
+    if(!check){
+        res.status(404).json('USER NOT FOUND');
+    }
 })
 
 app.listen(3001, () => {
