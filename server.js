@@ -1,25 +1,22 @@
 import express from 'express';
 import database from '../../my-server/server-express.js';
 import cors from 'cors';
-import pg from 'pg';
 import knex from 'knex';
 
 
-knex({
+
+const app = express();
+app.use(express.json());
+app.use(cors());
+const db = knex({
     client: 'pg',
     connection: {
       host : '127.0.0.1',
-      port : 3306,
       user : 'postgres',
       password : 'lugaro26',
       database : 'face-detector'
     }
   });
-  
-
-const app = express();
-app.use(express.json());
-app.use(cors());
 
 app.get('/', (req, res) => {
     res.json(database);
@@ -41,44 +38,32 @@ app.post('/signin', (req, res) => {
 
 app.post('/register', (req, res) => {
     const { email, password, name } = req.body;
-    let exists = false;
-    database.forEach(user => {
-        if(req.body.email === user.email && req.body.password === user.password){
-            res.json('success!');
-            exists = true;
-        }
-    });
-    async function existence (){
-        if(exists === false){
-        database.push({
-            'name': name,
-            'email': email,
-            'password': password,
-            'date': new Date(),
-            'id': (Number(database[database.length - 1].id) + 1),
-            'detections': 0
-        })
-        res.json('REGISTERED');
-    } else {
-        res.json('Sorry, it seems like this email is already registered or is not valid');
-    }
-    }
 
-    existence();
+        db('usersdb')
+            .returning('*')
+            .insert({
+                name: name,
+                email: email,
+                joined: new Date()
+        }).then(user => {
+            res.json(user[0]);
+        }).catch(err => res.status(400).json('oops, error'))
+        res.json('REGISTERED');
 })
 
 app.get('/profile/:id', (req, res) => {
-    let check =  false;
     const { id } = req.params;
-    database.forEach(user => {
-        if(user.id === id){
-            check = true;
-            res.json(user);
+    db.select('*').from('usersdb').where({
+        id: id
+    })
+    .then(user => {
+        if(user.length){
+            res.json(user[0]);
+        } else {
+            res.status(400).json('NOT FOUND');
         }
-    });
-    if(!check){
-        res.status(404).json('USER NOT FOUND');
-    }
+    })
+    .catch(err => res.status(400).json('Error getting user'));
 })
 
 app.put('/image', (req, res) => {
@@ -100,7 +85,4 @@ app.listen(3001, () => {
 });
 
 
-// / --> get
-// /signin --> push
-// /register --> push
 
