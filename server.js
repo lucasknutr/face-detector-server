@@ -75,17 +75,14 @@ app.get('/profile/:id', (req, res) => {
 // * UPDATING DETECTION COUNT EVERY TIME A USER INPUTS A NEW IMAGE
 
 app.put('/image', (req, res) => {
-    let check =  false;
     const { id } = req.body;
-    database.forEach(user => {
-        if(user.id === id){
-            check = true;
-            user.detections++;
-        }
-    });
-    if(!check){
-        res.status(404).json('USER NOT FOUND');
-    }
+    db('usersdb')
+    .where('id', '=', id)
+    .increment('detections', 1)
+    .returning('detections')
+    .then(entries => {
+        res.json(Number(entries[0].detections));
+    })
 })
 
 app.listen(3001, () => {
