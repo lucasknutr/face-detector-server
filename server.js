@@ -2,6 +2,7 @@ import express from 'express';
 import database from '../../my-server/server-express.js';
 import cors from 'cors';
 import knex from 'knex';
+import bcrypt from 'bcrypt';
 
 // ! ATTENTION WANDERERS: this is an experimental server code, it's my first full server project, I'm still fighting with the logic. I'm trying to do best practices here, but I'm no parameter if you're trying to replicate or learn anything. You should definetely look for some node and express courses online if that's the case.
 
@@ -36,7 +37,7 @@ app.post('/signin', (req, res) => {
         // todo (1) CHECK IF DATA IS VALID WITH BCRYPT, I'LL REPRESENT THAT BY USING A PLACEHOLDER FUNCTION CALLED isValid()
 
         if (isValid){
-            return db.select('*').from('usersdb').where('email', '=', email);
+            return db.select('*').from('usersdb').where('email', '=', email)
             .then(user => {
                 res.json(user[0]);
             })
@@ -98,8 +99,5 @@ app.put('/image', (req, res) => {
 })
 
 app.listen(3001, () => {
-    console.log('successssssss!');
+    console.log('GET: Success!');
 });
-
-
-
