@@ -25,17 +25,29 @@ app.get('/', (req, res) => {
 })
 
 app.post('/signin', (req, res) => {
-    let response = false;
-    database.forEach(user => {
-        if(req.body.email === user.email && req.body.password === user.password){
-            res.json(user);
-            response = true;
-        }
-    });
-    if(response === false){
-        res.json('error!');
+    const { email, password } = req.body;
+    if(!email || !password){
+        res.status(400).json('Incorrect form submission');
     }
+    db('usersdb')
+    .where('email', '=', email)
+    .then(data => {
 
+        // todo (1) CHECK IF DATA IS VALID WITH BCRYPT, I'LL REPRESENT THAT BY USING A PLACEHOLDER FUNCTION CALLED isValid()
+
+        if (isValid){
+            return db.select('*').from('usersdb').where('email', '=', email);
+            .then(user => {
+                res.json(user[0]);
+            })
+            .catch(err => res.status(400).json('Unable to get users from server'));
+        } else {
+            res.status(400).json('Wrong credentials, please check again your user info or contact me through the following email: lucasknutr@proton.me');
+        }
+    })
+    .catch(err => {
+        res.status(400).json('Wrong credentials, please check again your user info or contact me through the following email: lucasknutr@proton.me');
+    })
 })
 
 // * REGISTER: using some simple postgreSQL syntax to insert users data into our database
