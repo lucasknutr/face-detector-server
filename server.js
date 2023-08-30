@@ -4,9 +4,14 @@ import cors from 'cors';
 import knex from 'knex';
 import bcrypt from 'bcrypt';
 
-// ! ATTENTION WANDERERS: this is an experimental server code, it's my first full server project, I'm still fighting with the logic. I'm trying to do best practices here, but I'm no parameter if you're trying to replicate or learn anything. You should definetely look for some node and express courses online if that's the case.
+    // ! ATTENTION WANDERERS: this is an experimental server code, 
+    // ! it's my first full server project, I'm still fighting with the logic. 
+    // ! I'm trying to do best practices here, 
+    // ! but I'm no parameter if you're trying to replicate or learn anything. 
+    // ! You should definetely look for some node and express courses and 
+    // ! official documentations online if that's the case.
 
-// * This is a simple server structure built with express/node to be the backend of my "facedetector" website. It's currently hosted at https://lucasknutr.github.io/face-detector/
+    // * This is a simple server structure built with express/node to be the backend of my "facedetector" website. It's currently hosted at https://lucasknutr.github.io/face-detector/
 
 const app = express();
 app.use(express.json());
@@ -22,7 +27,7 @@ const db = knex({
   });
 
 app.get('/', (req, res) => {
-    res.json(database);
+    res.json(db.select('*').from('usersdb'));
 })
 
 app.post('/signin', (req, res) => {
@@ -35,6 +40,9 @@ app.post('/signin', (req, res) => {
     .then(data => {
 
         // todo (1) CHECK IF DATA IS VALID WITH BCRYPT, I'LL REPRESENT THAT BY USING A PLACEHOLDER FUNCTION CALLED isValid()
+        const isValid = () => {
+            if 
+        }
 
         if (isValid){
             return db.select('*').from('usersdb').where('email', '=', email)
@@ -44,7 +52,7 @@ app.post('/signin', (req, res) => {
             .catch(err => res.status(400).json('Unable to get users from server'));
         } else {
             res.status(400).json('Wrong credentials, please check again your user info or contact me through the following email: lucasknutr@proton.me');
-        }
+   1     }
     })
     .catch(err => {
         res.status(400).json('Wrong credentials, please check again your user info or contact me through the following email: lucasknutr@proton.me');
@@ -55,16 +63,30 @@ app.post('/signin', (req, res) => {
 
 app.post('/register', (req, res) => {
     const { email, password, name } = req.body;
+    const hash = bcrypt.hashSync(password, 10);
+
+        db.transaction(trx => {
+            trx.insert({
+                'email': email,
+                'secret': hash,
+            })
+            .into('login')
+            .returning('email')
+            .then(loginEmail => {
+                return trx('usersdb')
+                .returning('*')
+                .insert({
+                    name: name,
+                    email: email,
+                    joined: new Date()
+            }).then(user => {
+                res.json(user[0]);
+            })
+            })
+        })
 
         db('usersdb')
-            .returning('*')
-            .insert({
-                name: name,
-                email: email,
-                joined: new Date()
-        }).then(user => {
-            res.json(user[0]);
-        }).catch(err => res.status(400).json('oops, error'))
+            .catch(err => res.status(400).json('oops, error'))
         res.json('REGISTERED');
 })
 
