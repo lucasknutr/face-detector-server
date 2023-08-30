@@ -1,5 +1,4 @@
 import express from 'express';
-import database from '../../my-server/server-express.js';
 import cors from 'cors';
 import knex from 'knex';
 import bcrypt from 'bcrypt';
@@ -35,15 +34,17 @@ app.post('/signin', (req, res) => {
     if(!email || !password){
         res.status(400).json('Incorrect form submission');
     }
-    db('usersdb')
+    db.select('*').from('login')
     .where('email', '=', email)
     .then(data => {
+        // console.log(data);
 
         // todo (1) CHECK IF DATA IS VALID WITH BCRYPT, I'LL REPRESENT THAT BY USING A PLACEHOLDER FUNCTION CALLED isValid()
-        const isValid = () => {
-            if 
-        }
-
+        
+        const isValid = bcrypt.compareSync(password, data[0].secret);
+        // console.log(bcrypt.compareSync(password, data[0].secret))
+        // console.log('password: ', password);
+        // console.log('secret: ', data[0].secret);
         if (isValid){
             return db.select('*').from('usersdb').where('email', '=', email)
             .then(user => {
@@ -68,7 +69,7 @@ app.post('/register', (req, res) => {
         db.transaction(trx => {
             trx.insert({
                 'email': email,
-                'secret': hash,
+                'secret': hash
             })
             .into('login')
             .returning('email')
@@ -77,17 +78,19 @@ app.post('/register', (req, res) => {
                 .returning('*')
                 .insert({
                     name: name,
-                    email: email,
+                    email: loginEmail[0].email,
                     joined: new Date()
             }).then(user => {
                 res.json(user[0]);
             })
             })
+            .then(trx.commit)
+            .catch(trx.rollback)
         })
-
-        db('usersdb')
-            .catch(err => res.status(400).json('oops, error'))
-        res.json('REGISTERED');
+        .catch(err => res.status(400).json('Unable to register'))
+        // db('usersdb')
+        //     .catch(err => res.status(400).json('oops, error'))
+        // res.json('REGISTERED');
 })
 
 // todo: add profiles to each user, till there this specific requisition is useless
